@@ -1,5 +1,5 @@
 # (Boost Camp AI Tech U-Stage) Practice Modulization
-## Branch
+## Branch Rules
 - `main` : 최상위 디폴트 브랜치
 - `develop` : 각 `feature` 브랜치 병합을 위한 베이스 브랜치
 - `feature` : 개인 작업 브랜치 (`feature/T2096`)
