@@ -1,10 +1,6 @@
 # https://colab.research.google.com/drive/1UiR_cWxO8ALkt0nBeZp9wtusWwU8NJVO
-from tqdm import tqdm
-from torch import nn
-from torch.nn import functional as F
 from torch.utils.data import Dataset
 from utils import *
-
 import argparse
 import torch
 
@@ -14,21 +10,28 @@ class SkipGramDataset(Dataset):
 
     Args:
         train_tokenized (list): 2D-Array of tokenized words from train raw sentences
-        window_size (int): focus on 2-positions both left and right side of current word
+        window_size (int): focus on 2-positions(default) both left and right side of current word
     '''
     def __init__(self, train_tokenized, window_size=2):
+        # 초기화 시 X, Y 세팅
         self.x = []
         self.y = []
 
         for tokens in tqdm(train_tokenized):
             token_ids = [w2i[token] for token in tokens]
             for i, id in enumerate(token_ids):
-                if i-window_size >= 0 and i+window_size < len(token_ids):
-                    self.y += (token_ids[i-window_size:i] + token_ids[i+1:i+window_size+1])
+                # token_ids 범위 내
+                if i - window_size >= 0 and i + window_size < len(token_ids):
+                    # target => 현위치 기준 (왼쪽 2개 단어 + 오른쪽 2개 단어)
+                    self.y += (token_ids[i - window_size:i] + token_ids[i + 1:i + window_size + 1])
                     self.x += [id] * 2 * window_size
 
-        self.x = torch.LongTensor(self.x)  # (전체 데이터 개수)
-        self.y = torch.LongTensor(self.y)  # (전체 데이터 개수)
+        self.x = torch.LongTensor(self.x)
+        self.y = torch.LongTensor(self.y)
+
+        print(' -- Original X and Y of Dataset -- ')
+        print(self.x)
+        print(self.y)
 
     def __len__(self):
         return self.x.shape[0]
@@ -39,6 +42,8 @@ class SkipGramDataset(Dataset):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--w2v_type', type=str, default='skip', help='A type of Word2Vec (default: skip-gram)')
+    parser.add_argument('--window_size', type=int, default=2, help='A sliding window size (default: 2)')
+
     args = parser.parse_args()
     print(' -- Check Args -- ')
     print(args)
@@ -54,7 +59,7 @@ if __name__ == '__main__':
 
     try:
         if args.w2v_type == 'skip':
-            skipgram_set = SkipGramDataset(train_tokenized)
+            skipgram_set = SkipGramDataset(train_tokenized, args.window_size)
             print(' -- Check Skip-Gram Dataset -- ')
             print(skipgram_set[0])
         else:

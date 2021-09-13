@@ -39,7 +39,7 @@ def get_word_to_index(word_count):
     w2i = {}
     for pair in tqdm(word_count):
         if pair[0] not in w2i:
-            w2i[pair[0]] = len(w2i)
+            w2i[pair[0]] = len(w2i) # length = idx
     return w2i
 
 def make_tokenized(data):
@@ -51,9 +51,16 @@ def make_tokenized(data):
     '''
     tokenizer = Okt()
     tokenized = []
+    pos_list = []
     for sent in tqdm(data):
+        # stem => if True, '맛있습니다' to '맛있다'
+        # morphs from pos
         tokens = tokenizer.morphs(sent, stem=True)
+        pos_list.append(tokenizer.pos(sent, stem=True))
         tokenized.append(tokens)
+    print(' -- (Optional) POS of Tokens -- ')
+    print('==' * 30)
+    print(pos_list)
     return tokenized
 
 def check_train_data(train_data, train_tokenized, word_count, w2i):
