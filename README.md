@@ -30,6 +30,14 @@ git commit -m 'init'
 git push origin
 ```
 
+## Pull
+1. 받고자 하는 브랜치로 이동
+```
+git fetch origin
+git pull origin
+```
+2. 로컬에서 변경사항 확인
+
 ## (Optional) GUI
 1. SourceTree
 2. GitKraken
