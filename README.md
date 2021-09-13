@@ -4,6 +4,10 @@
 - `develop` : 각 `feature` 브랜치 병합을 위한 베이스 브랜치
 - `feature` : 개인 작업 브랜치 (`feature/T2096`)
 
+## Coding Rules
+- 본인의 작업범위에 해당하는 파일에서 작업
+- 가급적 클래스 및 함수화를 고려하며 작업
+
 ## Initialization
 1. Git Bash 열기
 2. Clone 원하는 경로로 이동
@@ -29,6 +33,14 @@ git add .
 git commit -m 'init'
 git push origin
 ```
+
+## Pull
+1. 받고자 하는 브랜치로 이동
+```
+git fetch origin
+git pull origin
+```
+2. 로컬에서 변경사항 확인
 
 ## (Optional) GUI
 1. SourceTree
