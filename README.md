@@ -22,7 +22,7 @@ git push --set-upstream origin feature/T2222 (remote 최초 업로드)
 4. Github 에서 작업 브랜치 생성되었는지 확인
 
 ## Commit and Push
-1. 단위 작업 완료 시 본인 `feature/T2096` 작업 브랜치에서 Commit and Push
+1. 본인 `feature/T2096` 작업 브랜치에서 단위 작업 완료 시 Commit and Push
 2. `develop` 병합 => 의논 후 진행
 ```
 git add .
@@ -38,3 +38,6 @@ git push origin
 ## (Optional) Source Diff
 1. Github
 2. [ArcroDiff](http://www.acrosoft.pe.kr/acroedit/)
+
+## Git Docs
+https://git-scm.com/book/ko/v2
