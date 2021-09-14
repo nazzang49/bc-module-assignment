@@ -1,5 +1,6 @@
 from typing import List, Dict, Tuple, Sequence, Any
 from tmp_utils.NMTtools import Language
+import argparse
 """
     해당 모듈에서 빠져 있는 함수    
         1. preprocess
@@ -37,6 +38,15 @@ class NMTDataset(Sequence[Tuple[List[int], List[int]]]):
 
 if __name__ == '__main__':
     from tmp_utils.NMTtools import *
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--batch_size", help="number of batch size (default : 3)", default=3, type=int)
+    parser.add_argument(
+        "--max_pad_len", help="length of max pad (default : 5)", default=5, type=int)
+    arg = parser.parse_args()
+    batch_size = arg.batch_size
+    max_pad_len = arg.max_pad_len
+
     print("======Dataloader Test======")
     english = Language(
         ['고기를 잡으러 바다로 갈까나', '고기를 잡으러 강으로 갈까나', '이 병에 가득히 넣어가지고요'])
@@ -45,9 +55,6 @@ if __name__ == '__main__':
     english.build_vocab()
     korean.build_vocab()
     dataset = NMTDataset(src=english, tgt=korean)
-
-    batch_size = 3
-    max_pad_len = 5
     sentence_length = list(
         map(lambda pair: (len(pair[0]), len(pair[1])), dataset))
     """
