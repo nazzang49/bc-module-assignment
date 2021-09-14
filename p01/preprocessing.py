@@ -1,27 +1,27 @@
 from konlpy import tag
 from tqdm import tqdm
 import spacy
-import re
+from transformers import BertTokenizer
+import argparse
 
-def en_syllable_tokenizer(sentence):
-    vowel={'a':1,'e':1,'i':1,'o':1,'u':1,'y':1}
-    splitted_sentence=[]
-    for word in sentence:
-        syllables=[]
-        pattern=re.compile('([a-z]h)|([a-z])')
-        for character in re.split(pattern,word):
-            if character:
-                syllables.append(character)
-        syllable=''
+def characterwise_tokenizer(sentence):
+  syllables=[]
+  for word in sentence:
+    for syllable in word:
+      syllables.append(syllable)
+    return syllables
 
-        for idx,alpha in enumerate(syllables):
+#Tokenizer dictionary
+tokenizer = {
+  'okt':tag.Okt().morphs,
+  'mecab':tag.Mecab().morphs,
+  'character':characterwise_tokenizer,
+  'spacy':spacy.load('en_core_web_sm'),
+  'bert':BertTokenizer.from_pretrained('bert-base-cased').tokenize,
+}
 
-            if syllables[idx-1] in vowel:
-                if syllables[idx+1]
-
-tokenizer = {'okt':tag.Okt().morphs,'mecab':tag.Mecab().morphs,'spacy':spacy.load('en_core_web_sm'),}
-
-train_data = [
+#테스트용 데이터
+data={'ko': [
   "정말 맛있습니다. 추천합니다.",
   "기대했던 것보단 별로였네요.",
   "다 좋은데 가격이 너무 비싸서 다시 가고 싶다는 생각이 안 드네요.",
@@ -32,17 +32,30 @@ train_data = [
   "기념일에 방문했는데 음식도 분위기도 서비스도 다 좋았습니다.",
   "전반적으로 음식이 너무 짰습니다. 저는 별로였네요.",
   "위생에 조금 더 신경 썼으면 좋겠습니다. 조금 불쾌했습니다."
+],
+'en':[
+  'This assignment is about Natural Language Processing.',
+],
+'mixed':[
+  'S를 원소가 하나인 집합은 닫힌 집합인 위상공간 X의 부분 집합이라고 하자.'
 ]
+}
 
-
-def make_tokenized(data):
+def make_tokenized(args):
   tokenized = []  # 단어 단위로 나뉜 리뷰 데이터.
 
-  for sentence in tqdm(data):
-    tokens = tokenizer['mecab'](sentence)
+  for sentence in tqdm(data[args.data]):
+    tokens = tokenizer[args.tokenizer](sentence)
     tokenized.append(tokens)
 
   return tokenized
 
-train_tokenized = make_tokenized(train_data)
-print(train_tokenized)
+if __name__=='__main__':
+  parser=argparse.ArgumentParser()
+  parser.add_argument('--data',type=str,default='ko',help='Type ko for korean or en for english')
+  parser.add_argument('--tokenizer',type=str,default='mecab',help='Input name of tokenizer that you want to use')
+  args=parser.parse_args()
+
+  tokenized = make_tokenized(args)
+  print(tokenized)
+
