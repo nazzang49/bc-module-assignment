@@ -1,11 +1,6 @@
 from typing import List, Dict, Tuple, Sequence, Any
 from tmp_utils.NMTtools import Language
 import argparse
-"""
-    해당 모듈에서 빠져 있는 함수    
-        1. preprocess
-        : 혜수님이 완성 시킨 것 preprocess을 import 해야함 !!~~
-"""
 
 
 class NMTDataset(Sequence[Tuple[List[int], List[int]]]):
