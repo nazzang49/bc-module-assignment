@@ -10,7 +10,7 @@ import torch
     preprocess_tokenization import 필요
 """
 
-tokenized = make_tokenized(data)  # 운경님 make_tokenized 함수로 tokenize 실행
+tokenized = make_tokenized(data)  # 이삭님 make_tokenized 함수로 tokenize 실행
 
 #### count words
 def count_word(tokenized):
