@@ -20,7 +20,7 @@ git checkout develop
 git branch feature/T2096 (본인 캠퍼 아이디)
 git branch (작업 브랜치 생성 확인)
 git checkout feature/T2096
-git push --set-upstream origin feature/T2222 (remote 최초 업로드)
+git push --set-upstream origin feature/T2096 (remote 최초 업로드)
 ```
 3. 위 단계까지 마무리 하면 `main` `develop` `feature/T2096` 모두 `Local = Remote` 형상 싱크 완료
 4. Github 에서 작업 브랜치 생성되었는지 확인
