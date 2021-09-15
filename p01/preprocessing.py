@@ -206,7 +206,6 @@ class Language(Sequence[List[str]]):
     Class including the following 
         - Map special tokens to indicies
         - Build vocab(dictionary) or Set vocab(dictionary)
-        - Preprocess sentences
     '''
 
     # Special tokens
@@ -244,67 +243,68 @@ class Language(Sequence[List[str]]):
         self.word2idx = word2idx
         self.idx2word = idx2word
 
-    def preprocess(
-        self,
-        raw_src_sentence: List[str],
-        raw_tgt_sentence: List[str],
-        src_word2idx: Dict[str, int],
-        tgt_word2idx: Dict[str, int],
-        max_len: int
-    ) -> Tuple[List[int], List[int]]:
-        '''Sentence preprocessor for neural machine translation
-
-        Preprocess Rules:
-        1. All words should be converted into their own index number by word2idx.
-        2. If there is no matched word in word2idx, you should replace the word as <UNK> token.
-        3. You have to use matched word2idx for each source/target language.
-        4. You have to insert <SOS> as the first token of the target sentence.
-        5. You have to insert <EOS> as the last token of the target sentence.
-        6. The length of preprocessed sentences should not exceed max_len.
-        7. If the lenght of the sentence exceed max_len, you must truncate the sentence.
-
-        Arguments:
-        raw_src_sentence -- raw source sentence without any modification
-        raw_tgt_sentence -- raw target sentence without any modification 
-        src_word2idx -- dictionary for source language which maps words to their unique numbers
-        tgt_word2idx -- dictionary for target language which maps words to their unique numbers
-        max_len -- maximum length of sentences
-
-        Return:
-        src_sentence -- preprocessed source sentence
-        tgt_sentence -- preprocessed target sentence
-
-        '''
-
-        # Special tokens
-        UNK = self.UNK_TOKEN_IDX
-        SOS = self.SOS_TOKEN_IDX
-        EOS = self.EOS_TOKEN_IDX
-
-        src_sentence = []
-        tgt_sentence = []
-        for word in raw_src_sentence:
-            if word in src_word2idx: # src dictionary에 현재의 word가 있는 경우
-                src_sentence.append(src_word2idx[word])
-            else:
-                src_sentence.append(UNK) # src dictionary에 현재의 word가 없는 경우 -> <unk> token
-        
-        for word in raw_tgt_sentence:
-            if word in tgt_word2idx: # tgt dictionary에 현재의 word가 있는 경우
-                tgt_sentence.append(tgt_word2idx[word])
-            else:
-                tgt_sentence.append(UNK) # tgt dictionary에 현재의 word가 없는 경우 -> <unk> token
-
-        src_sentence = src_sentence[:max_len] # max_len까지의 sequence만
-        tgt_sentence = [SOS] + tgt_sentence[:max_len-2] + [EOS] # SOS, EOS token을 추가하고 max_len까지의 sequence만
-
-        return src_sentence, tgt_sentence
-
     def __getitem__(self, index: int) -> List[str]:
         return self._sentences[index]
     
     def __len__(self) -> int:
         return len(self._sentences)
+
+
+def preprocess(
+    self,
+    raw_src_sentence: List[str],
+    raw_tgt_sentence: List[str],
+    src_word2idx: Dict[str, int],
+    tgt_word2idx: Dict[str, int],
+    max_len: int
+) -> Tuple[List[int], List[int]]:
+    '''Sentence preprocessor for neural machine translation
+
+    Preprocess Rules:
+    1. All words should be converted into their own index number by word2idx.
+    2. If there is no matched word in word2idx, you should replace the word as <UNK> token.
+    3. You have to use matched word2idx for each source/target language.
+    4. You have to insert <SOS> as the first token of the target sentence.
+    5. You have to insert <EOS> as the last token of the target sentence.
+    6. The length of preprocessed sentences should not exceed max_len.
+    7. If the lenght of the sentence exceed max_len, you must truncate the sentence.
+
+    Arguments:
+    raw_src_sentence -- raw source sentence without any modification
+    raw_tgt_sentence -- raw target sentence without any modification 
+    src_word2idx -- dictionary for source language which maps words to their unique numbers
+    tgt_word2idx -- dictionary for target language which maps words to their unique numbers
+    max_len -- maximum length of sentences
+
+    Return:
+    src_sentence -- preprocessed source sentence
+    tgt_sentence -- preprocessed target sentence
+
+    '''
+
+    # Special tokens
+    UNK = self.UNK_TOKEN_IDX
+    SOS = self.SOS_TOKEN_IDX
+    EOS = self.EOS_TOKEN_IDX
+
+    src_sentence = []
+    tgt_sentence = []
+    for word in raw_src_sentence:
+        if word in src_word2idx: # src dictionary에 현재의 word가 있는 경우
+            src_sentence.append(src_word2idx[word])
+        else:
+            src_sentence.append(UNK) # src dictionary에 현재의 word가 없는 경우 -> <unk> token
+    
+    for word in raw_tgt_sentence:
+        if word in tgt_word2idx: # tgt dictionary에 현재의 word가 있는 경우
+            tgt_sentence.append(tgt_word2idx[word])
+        else:
+            tgt_sentence.append(UNK) # tgt dictionary에 현재의 word가 없는 경우 -> <unk> token
+
+    src_sentence = src_sentence[:max_len] # max_len까지의 sequence만
+    tgt_sentence = [SOS] + tgt_sentence[:max_len-2] + [EOS] # SOS, EOS token을 추가하고 max_len까지의 sequence만
+
+    return src_sentence, tgt_sentence
 
 
 if __name__ == '__main__':
