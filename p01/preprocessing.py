@@ -13,9 +13,9 @@ def characterwise_tokenizer(sentence):
 
 #Tokenizer dictionary
 tokenizer = {
-  'okt':tag.Okt().morphs,
-  'mecab':tag.Mecab().morphs,
-  'character':characterwise_tokenizer,
+  'okt':tag.Okt().morphs, #한국어 토크나이저
+  'mecab':tag.Mecab().morphs, #한국어 토크나이저
+  'character':characterwise_tokenizer, #글자별 토크나이저
   'spacy':spacy.load('en_core_web_sm'),
   'bert':BertTokenizer.from_pretrained('bert-base-cased').tokenize,
 }
@@ -37,7 +37,7 @@ data={'ko': [
   'This assignment is about Natural Language Processing.',
 ],
 'mixed':[
-  'S를 원소가 하나인 집합은 닫힌 집합인 위상공간 X의 부분 집합이라고 하자.'
+  'S를 element가 하나인 집합은 닫힌 집합인 topological space X의 부분 집합이라고 하자.'
 ]
 }
 
