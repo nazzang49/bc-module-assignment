@@ -178,11 +178,11 @@ def bucketed_batch_indices(
     for key, value in batch_map.items():
         batch_indices_list += [value[i: i+batch_size]
                                for i in range(0, len(value), batch_size)]
-
     # 코드 작성 완료
 
     # Don't forget shuffling batches because length of each batch could be biased
     random.shuffle(batch_indices_list)
+    print(f'batch_indices_list : {batch_indices_list}')
 
     return batch_indices_list
 

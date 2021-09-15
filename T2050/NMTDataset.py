@@ -1,6 +1,7 @@
 from typing import List, Dict, Tuple, Sequence, Any
 from tmp_utils.NMTtools import Language
 import argparse
+from torch.utils.data.dataloader import DataLoader
 
 
 class NMTDataset(Sequence[Tuple[List[int], List[int]]]):
@@ -32,6 +33,11 @@ class NMTDataset(Sequence[Tuple[List[int], List[int]]]):
         return len(self._src)
 
 
+class NMTDataLoder(DataLoader):
+    def __init__(self,  *args, **kwargs):
+        super(NMTDataLoder, self).__init__(*args, **kwargs)
+
+
 if __name__ == '__main__':
     from tmp_utils.NMTtools import *
     parser = argparse.ArgumentParser()
@@ -58,18 +64,19 @@ if __name__ == '__main__':
 
         pair[0] = src_sentence : List[int] / pair[1] = tgt_sentence : List[int]
     """
-    bucketed_batch_indices(
-        sentence_length, batch_size=batch_size, max_pad_len=max_pad_len)
+
     dataloader = torch.utils.data.dataloader.DataLoader(dataset, collate_fn=collate_fn, num_workers=2,
                                                         batch_sampler=bucketed_batch_indices(sentence_length, batch_size=batch_size, max_pad_len=max_pad_len))
-    """[summary] 
+    """
         DataLoader의 적용 순서 : batch_sampler -> collate_fn
         batch_sampler : dataset에서 문장의 길이가 비슷한 것들 끼리 묶어서 최대 batch_size 길이만큼 return 해준다
         collate_fn : batch_sample을 padding 시켜준다
     """
-
-    src_sentences, tgt_sentences = next(iter(dataloader))
+    # for src_sentences, tgt_sentences in dataloader:
+    tmp = iter(dataloader)
+    src_sentences, tgt_sentences = next(tmp)
     print("Tensor for Source Sentences: \n", src_sentences)
-    print("Tensor for Target Sentences: \n", tgt_sentences)
+    src_sentences, tgt_sentences = next(tmp)
+    print("Tensor for Source Sentences: \n", src_sentences)
 
     print("모든 전처리 과제를 완료했습니다 고생하셨습니다 :)")
