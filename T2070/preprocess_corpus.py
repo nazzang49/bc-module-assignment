@@ -36,7 +36,7 @@ class Dictionary(object):
         if word not in self.word2idx:  # 기존 dictionary 없는 단어라면
             self.idx2word.append(word)  # idx2word 리스트에 word append
             self.word2idx[word] = len(self.idx2word) - 1  # 추가할 때 마다 가장 마지막 idx로 idx 지정
-        return self.word2idx[word]  # 단어의 idx 값 리텅
+        return self.word2idx[word]  # 단어의 idx 값 리턴
 
     def __len__(self):
         return len(self.idx2word)  # 사전에 저장된 단어 개수 리턴
@@ -56,7 +56,7 @@ class Corpus(object):
         # Add words to the dictionary
         with open(path, 'r', encoding="utf8") as f:  # path 파일 열어서 읽기
             for line in f:
-                words = line.split() + ['<eos>']  # 한 line 안에서 split으로 음절 단위로 나누고 line 끝날 때 eos 직접 추가
+                words = line.split() + ['<eos>']  # 한 line 안에서 split으로 어절 단위로 나누고 line 끝날 때 eos 직접 추가  # 이삭님 tokenization 함수 추가
                 for word in words:
                     self.dictionary.add_word(word)  # dicitionary에 추가
 
@@ -69,12 +69,12 @@ class Corpus(object):
                 for word in words:
                     ids.append(self.dictionary.word2idx[word])  # dictionary에서 각 단어 idx를 찾아서 ids에 append!
                 idss.append(torch.tensor(ids).type(torch.int64))  # 한 라인이 끝나면 ids를 -> int 타입으로 tensor화해서 idss에 넣기
-            ids = torch.cat(idss)  # 모인 idss들을 concatenate : 1차원이 됨!(맞나?)
+            ids = torch.cat(idss)  # 모인 idss들을 concatenate : 1차원이 됨!
 
-        return ids  # token 길이만큼의 사이즈를 가진 1차원 벡터
+        return ids  # token 길이만큼의 사이즈를 가진 1차원 벡터 리턴
 
 
-#### Language class
+#### Language class : 문장 간 번역이다보니! 문장 단위
 class Language(Sequence[List[str]]):
     # 직접 지정해주는 특수 token, token idx
     PAD_TOKEN = '<PAD>'
@@ -87,7 +87,7 @@ class Language(Sequence[List[str]]):
     EOS_TOKEN_IDX = 3
         
     def __init__(self, sentences: List[str]) -> None:
-        self._sentences: List[List[str]] = [sentence.split() for sentence in sentences]  # [[sentence], ... ,[sentence]]  각 sentence 안에는 음절 기준 tokenization
+        self._sentences: List[List[str]] = [sentence.split() for sentence in sentences]  # [[sentence], ... ,[sentence]]  각 sentence 안에는 어절 기준 tokenization
         self.word2idx: Dict[str, int] = None
         self.idx2word: List[str] = None
 
