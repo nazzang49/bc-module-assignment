@@ -1,6 +1,6 @@
 from tqdm import tqdm
 from torch import nn
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+from torch.nn.utils.rnn import pack_padded_sequence, pad_sequence
 import torch
 
 from typing import List, Dict, Tuple, Sequence, Any
@@ -134,28 +134,46 @@ def bucketed_batch_indices(
       max_pad_len : padding처리시에 padding 토큰의 최대 갯수
 
 
+    의사 코드
+
+    1. 전체 데이터를 그룹화하기
+        1-1. batch_map : (src, tgt) : [idx] 모양의 딕셔너리 정의
+        1-2. min(source_sentence 길이, target_sentence 길이) 구하기
+        1-3. 각 sentence_length[idx] : (source_sentence 길이, target_sentence 길이)에 대하여
+             src, tgt 구하기 : (source_sentence 길이, target_sentence 길이) - min(source_sentence 길이, target_sentence 길이) + 1 를
+             max_pad_len로 나눈 몫
+             batch_map에 idx값 추가
+
+    2. 배치 단위로 만들기
+        2-1. batch_map의 각 value(idx) 리스트에 대해 정해놓은 배치크기 단위로 (인덱스) 리스트 만들기
+        2-2. 만들어진 배치크기의 리스트를 batch_indices_list에 추가
+
+    3. 배치 섞어주기
+
+
     return:
-    batch_indices_list : batch화된 인덱스 리스트. 각 요소는 문장길이 목록의 인덱스 리스트이다.
-
-
-
+    batch_indices_list : batch화된 인덱스 리스트. 각 요소는 문장길이 목록의(==sentence_length에 대한) 인덱스 리스트이다.
     '''
 
+
     # 1.
+    # 1-1.
     batch_map = defaultdict(list)
     batch_indices_list = []
 
+    # 1-2.
     # 첫번째 인덱스인 src의 min length
     src_len_min = min(sentence_length, key=lambda item:item[0])[0] 
     # 두번째 인덱스인 tgt의 min length
     tgt_len_min = min(sentence_length, key=lambda item:item[1])[1] 
 
+    # 1-3.
     for idx, (src_len, tgt_len) in enumerate(sentence_length):
         src = (src_len - src_len_min + 1) // max_pad_len # max_pad_len 단위로 묶어주기 위한 몫 (그림에서는 5)
         tgt = (tgt_len - tgt_len_min + 1) // max_pad_len # max_pad_len 단위로 묶어주기 위한 몫 (그림에서는 5)
         batch_map[(src, tgt)].append(idx)
 
-    # 2. 
+    # 2.
     for key, value in batch_map.items():
         batch_indices_list += [value[i: i+batch_size] for i in range(0, len(value), batch_size)]
 
@@ -218,26 +236,54 @@ def collate_fn(
     batched_samples: List[Tuple[List[int], List[int]]]
 ) -> Tuple[torch.Tensor, torch.Tensor]:
 
-    PAD = 0
-    batch_size = len(batched_samples)
+    '''
+    Task
+    각 문장의 길이가 가변적이므로 <PAD> 토큰을 사용하여 하나의 배치로 조합해야 합니다.
+    즉, (소스/타겟)쌍의 문장 리스트를 소스문장 리스트, 타겟문장 리스트 배치로 조합하고 뒤에 <PAD> 토큰을 추가하는 collate_fn 기능 구현
+    한편, 후자 구현의 편의를 위해 배치 내의 문장을 소스 문장 길이에 따라 내림차순으로 정렬해야 합니다.
+    
+    
+    참고 1: 시계열 데이터의 전문가라면 [sequence_length, batch_size, ...]의 텐서가 [batch_size, sequence_length, ...]보다 훨씬 빠릅니다.
+    다만, 직관적인 이해를 돕기 위해 이번에는 그냥 batch_first를 사용합니다.
 
-    ### 아래에 코드 빈칸을 완성해주세요
+    참고 2: collate_fn 인수를 사용하여 이 함수를 torch.utils.data.dataloader.DataLoader에 직접 적용할 수 있습니다.
+    관심이 있는 경우 테스트 코드를 읽으십시오.
+
+    힌트: torch.nn.utils.rnn.pad_sequence가 유용할 것입니다.
+
+    Arguments:
+    batched_samples -- (source_sentence, target_sentence)쌍을 요소로하는 리스트. 이 리스트는 배치로 변환되어야 합니다.
+
+
+    의사 코드
+    1. 하나의 배치(batched_samples)에 대하여 첫 번째 요소를 기준으로 길이에 따른 내림차순 정렬
+    2. (source_sentence, target_sentence)쌍 리스트를 source_sentence, target_sentence로 변환
+    3. source_sentence, target_sentence 0값으로 패딩 처리
+
+
+    Return:
+    src_sentences -- 배치처리된 source sentence
+                        in shape (batch_size, max_src_sentence_length)
+    tgt_sentences -- 배치처리된 target sentence
+                        in shape (batch_size, max_tgt_sentence_length)
+    '''
+
+
+    # 1.
     batched_samples = sorted(batched_samples, key=lambda item:item[0], reverse= True) # 0번째 요소의 길이를 기준으로 내림차순 정렬
     
+    # 2.
     src_sentences = []
     tgt_sentences = []
     for src_sentence, tgt_sentence in batched_samples:
         src_sentences.append(torch.tensor(src_sentence))
         tgt_sentences.append(torch.tensor(tgt_sentence))
 
-    src_sentences = torch.nn.utils.rnn.pad_sequence(src_sentences, batch_first=True) # batch x longest seuqence 순으로 정렬 (링크 참고)
-    tgt_sentences = torch.nn.utils.rnn.pad_sequence(tgt_sentences, batch_first=True) # batch x longest seuqence 순으로 정렬 (링크 참고)
+    # 3.
+    src_sentences = pad_sequence(src_sentences, batch_first=True) # batch x longest seuqence 순으로 정렬 (링크 참고)
+    tgt_sentences = pad_sequence(tgt_sentences, batch_first=True) # batch x longest seuqence 순으로 정렬 (링크 참고)
     # 링크: https://pytorch.org/docs/stable/generated/torch.nn.utils.rnn.pad_sequence.html
 
-    ### 코드 작성 완료
-
-    assert src_sentences.shape[0] == batch_size and tgt_sentences.shape[0] == batch_size
-    assert src_sentences.dtype == torch.long and tgt_sentences.dtype == torch.long
     return src_sentences, tgt_sentences
 
 
