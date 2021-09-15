@@ -274,6 +274,7 @@ class Language(Sequence[List[str]]):
         tgt_sentence -- preprocessed target sentence
 
         '''
+        
         # Special tokens
         UNK = self.UNK_TOKEN_IDX
         SOS = self.SOS_TOKEN_IDX
