@@ -227,6 +227,7 @@ class Language(Sequence[List[str]]):
     def build_vocab(self, min_freq: int=1) -> None:
         '''
         Build vocabulary
+            Add word to the vocabulary only if word appears more than min_freq
         '''
         SPECIAL_TOKENS: List[str] = [Language.PAD_TOKEN, Language.UNK_TOKEN, Language.SOS_TOKEN, Language.EOS_TOKEN]
         
@@ -274,7 +275,7 @@ class Language(Sequence[List[str]]):
         tgt_sentence -- preprocessed target sentence
 
         '''
-        
+
         # Special tokens
         UNK = self.UNK_TOKEN_IDX
         SOS = self.SOS_TOKEN_IDX
