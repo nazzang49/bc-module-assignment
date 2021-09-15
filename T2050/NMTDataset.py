@@ -21,7 +21,8 @@ class NMTDataset(Sequence[Tuple[List[int], List[int]]]):
     def __getitem__(self, index: int) -> Tuple[List[str], List[str]]:
         """
             NMTDataset에 index로 접근( NMTDataset[index] )할 경우 해당 문장을 지정한 maxlen까지의 길이를 가진 word2idx로 변화한 sentance 값을 return
-
+            Arg:
+                index : [int] 몇 번째 문장을 불러올지 지정
             return :
                 src_sentence : List[int], tgt_sentence : List[int]
         """
@@ -61,6 +62,11 @@ if __name__ == '__main__':
         sentence_length, batch_size=batch_size, max_pad_len=max_pad_len)
     dataloader = torch.utils.data.dataloader.DataLoader(dataset, collate_fn=collate_fn, num_workers=2,
                                                         batch_sampler=bucketed_batch_indices(sentence_length, batch_size=batch_size, max_pad_len=max_pad_len))
+    """[summary] 
+        DataLoader의 적용 순서 : batch_sampler -> collate_fn
+        batch_sampler : dataset에서 문장의 길이가 비슷한 것들 끼리 묶어서 최대 batch_size 길이만큼 return 해준다
+        collate_fn : batch_sample을 padding 시켜준다
+    """
 
     src_sentences, tgt_sentences = next(iter(dataloader))
     print("Tensor for Source Sentences: \n", src_sentences)
