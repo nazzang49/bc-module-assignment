@@ -1,11 +1,12 @@
 # Encoder
 # Decoder
 # SeqtoSeq
-
-from torch import nn
 from utils import *
+from torch import nn
 
 import argparse
+import torch
+import random
 
 class SkipGram(nn.Module):
     '''
@@ -27,30 +28,68 @@ class SkipGram(nn.Module):
         output = self.linear(embeddings)  # (B, V)
         return output
 
+
+class Seq2seq(nn.Module):
+    '''
+    A class of model to practice Seq2Seq with attention
+
+    Args:
+        encoder (nn.Module): encoding input data with GRU
+        decoder (nn.Module): decoding encoder outputs and hidden with self attention
+    '''
+    def __init__(self, encoder, decoder):
+        super(Seq2seq, self).__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+
+    def forward(self, src_batch, src_batch_lens, trg_batch, teacher_forcing_prob=0.5):
+        # src_batch: (B, S_L), src_batch_lens: (B), trg_batch: (B, T_L), encoder_outputs: (S_L, B, d_h), hidden: (1, B, d_h)
+        # (인코딩 순서) Embedding => GRU => Linear with Tanh
+        encoder_outputs, hidden = self.encoder(src_batch, src_batch_lens)
+        input_ids = trg_batch[:, 0]  # (B)
+        batch_size = src_batch.shape[0]
+        outputs = torch.zeros(trg_max_len, batch_size, vocab_size)  # (T_L, B, V)
+
+        for t in range(1, trg_max_len):
+            # decoder_outputs: (B, V), hidden: (1, B, d_h)
+            # (디코딩 순서) Embedding => GRU => Attention => Linear with Concat
+            decoder_outputs, hidden = self.decoder(input_ids, encoder_outputs, hidden)
+            outputs[t] = decoder_outputs
+            _, top_ids = torch.max(decoder_outputs, dim=-1)  # top_ids: (B)
+            
+            # teacher forcing => 예측 단어 vs 정답 단어 as 디코더 다음 입력 단어
+            input_ids = trg_batch[:, t] if random.random() > teacher_forcing_prob else top_ids
+
+        return outputs
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--w2v_type', type=str, default='skip', help='A type of Word2Vec (default: skip-gram)')
+    parser.add_argument('--model_type', type=str, default='seq2seq', help='A type of model (default: skip-gram)')
     parser.add_argument('--window_size', type=int, default=2, help='A sliding window size (default: 2)')
 
     args = parser.parse_args()
     print(' -- Check Args -- ')
     print(args)
 
-    print(' -- Make Skip-Gram Class -- ')
-    train_data = get_train_data()
-    train_tokenized = make_tokenized(train_data)
-    word_count = get_word_count(train_tokenized)
-    word_count = sorted(word_count.items(), key=lambda x: x[1], reverse=True)
-    w2i = get_word_to_index(word_count)
-
-    print('[ Vocab Length ]', len(w2i)) # here 60
-
     try:
-        if args.w2v_type == 'skip':
-            skipgram = SkipGram(vocab_size=len(w2i), dim=256)
-            print(' -- Check Skip-Gram Class -- ')
+        if args.model_type == 'skip':
+            print(' -- Make Skip-Gram Class -- ')
+            train_data = get_train_data()
+            w2i = make_skipgram_dataset(train_data)
+            skipgram = SkipGram(vocab_size=len(w2i), dim=256) # vocab size 60 in here
             print(' [ Type of Model ] ', type(skipgram))
+            print(' -- Skip-Gram Class Done -- ')
+        elif args.model_type == 'seq2seq':
+            print(' -- Make Seq2Seq Class -- ')
+            vocab_size = 100
+            src_dict, trg_dict = make_seq2seq_dataset()
+            trg_max_len = trg_dict['trg_max_len']
+
+            # TODO: call encoder and decoder
+            # seq2seq = Seq2seq(encoder, decoder)
+            # print(' [ Type of Model ] ', type(seq2seq))
+            print(' -- Seq2Seq Class Done -- ')
         else:
-            raise ValueError('[ Not Found Value ] 존재하지 않는 w2v_type 입니다.')
+            raise ValueError('[ Not Found Model ] 존재하지 않는 model_type 입니다.')
     except ValueError as e:
         print(e)

@@ -88,3 +88,115 @@ def check_train_data(train_data, train_tokenized, word_count, w2i):
     print(' -- Check Word to Index of Word Count --')
     print('==' * 30)
     print(w2i)
+
+def make_skipgram_dataset(train_data):
+    '''
+    A whole procedure for making train data of skip-gram
+
+    :param train_data: original train raw data
+    :return:
+    '''
+    train_tokenized = make_tokenized(train_data)
+    word_count = get_word_count(train_tokenized)
+    word_count = sorted(word_count.items(), key=lambda x: x[1], reverse=True)
+    return get_word_to_index(word_count)
+
+def padding(data, is_src=True):
+    '''
+    Add pad to source and target data with (source or target max length - source or target length)
+
+    :param data: source or target
+    :param is_src: flag
+    :return:
+    '''
+    max_len = len(max(data, key=len))
+    print(f"Maximum Sequence Length: {max_len}")
+    print(f"Is Source: {is_src}")
+
+    valid_lens = []     # original sequence length
+    pad_id = 0          # zero padding
+    for i, seq in enumerate(tqdm(data)):
+        valid_lens.append(len(seq))
+        if len(seq) < max_len:
+            # max 대비 남는 길이만큼 padding 처리
+            data[i] = seq + [pad_id] * (max_len - len(seq))
+    return data, valid_lens, max_len
+
+def get_src_data():
+    '''
+    Return source data for Seq2Seq practice
+
+    :return:
+    '''
+    return [
+        [3, 77, 56, 26, 3, 55, 12, 36, 31],
+        [58, 20, 65, 46, 26, 10, 76, 44],
+        [58, 17, 8],
+        [59],
+        [29, 3, 52, 74, 73, 51, 39, 75, 19],
+        [41, 55, 77, 21, 52, 92, 97, 69, 54, 14, 93],
+        [39, 47, 96, 68, 55, 16, 90, 45, 89, 84, 19, 22, 32, 99, 5],
+        [75, 34, 17, 3, 86, 88],
+        [63, 39, 5, 35, 67, 56, 68, 89, 55, 66],
+        [12, 40, 69, 39, 49]
+    ]
+
+def get_trg_data():
+    '''
+    Return target data for Seq2Seq practice
+
+    :return:
+    '''
+    return [
+        [75, 13, 22, 77, 89, 21, 13, 86, 95],
+        [79, 14, 91, 41, 32, 79, 88, 34, 8, 68, 32, 77, 58, 7, 9, 87],
+        [85, 8, 50, 30],
+        [47, 30],
+        [8, 85, 87, 77, 47, 21, 23, 98, 83, 4, 47, 97, 40, 43, 70, 8, 65, 71, 69, 88],
+        [32, 37, 31, 77, 38, 93, 45, 74, 47, 54, 31, 18],
+        [37, 14, 49, 24, 93, 37, 54, 51, 39, 84],
+        [16, 98, 68, 57, 55, 46, 66, 85, 18],
+        [20, 70, 14, 6, 58, 90, 30, 17, 91, 18, 90],
+        [37, 93, 98, 13, 45, 28, 89, 72, 70]
+    ]
+
+def check_seq2seq_data(src_data, trg_data):
+    '''
+    Check Seq2Seq train data
+
+    :param src_data:
+    :param trg_data:
+    :return:
+    '''
+    print(' -- Check Source Data After Padding --')
+    print('==' * 30)
+    print(src_data)
+
+    print(' -- Check Target Data After Padding --')
+    print('==' * 30)
+    print(trg_data)
+
+def make_seq2seq_dataset():
+    '''
+    A whole procedure for making train data of Seq2Seq
+
+    :return: dictionaries of src and trg
+    '''
+    src_data = get_src_data()
+    trg_data = get_trg_data()
+    src_data, src_lens, src_max_len = padding(src_data)
+    trg_data, trg_lens, trg_max_len = padding(trg_data)
+    check_seq2seq_data(src_data, trg_data)
+
+    src_dict = {
+        'src_data': src_data,
+        'src_lens': src_lens,
+        'src_max_len': src_max_len,
+    }
+
+    trg_dict = {
+        'trg_data': trg_data,
+        'trg_lens': trg_lens,
+        'trg_max_len': trg_max_len,
+    }
+    return src_dict, trg_dict
