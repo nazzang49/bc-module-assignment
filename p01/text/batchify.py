@@ -14,20 +14,27 @@ random.seed(1234)
 
 '''
 batch 데이터를 만드는 함수에 대한 파일
+(== collate_fn 구현에 필요한 함수에 대한 파일)
+
+배치화의 전처리(bucketing)
+  bucketed_batch_indices
 
 배치화 방식
   1. 문장 패딩 처리 방식
-    - padding_data, sort_pack_batch / bucketed_batch_indices
+    - padding_data, sort_pack_batch
+    - * torch.nn.utils.rnn.pad_sequence
 
   2. 하나의 리스트인 전체 데이터를 정해진 batch 크기로 나누는 방식
     - batchify
+  
 
 한 번에 처리할 batch 불러오기
   - get_batch
 
 
 collate_fn 만들기
-  - collate_fn
+  - collate_fn (정렬 후 배치화만 사용)
+  * 데이터에 따라 위의 구성 요소를 조합하여 원하는 collate_fn 구현이 가능
 
 '''
 
