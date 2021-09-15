@@ -5,7 +5,7 @@ class EnglishPreprocess:
     """
     Preprocess English Texts using spacy
     It tokenize text based mostly on space ' ' and punctuation marks
-    's is treated as individual token
+    's is treated as an individual token
     Then, it'll delete stopwords and punctuation marks then return
     lemmatized data
 
