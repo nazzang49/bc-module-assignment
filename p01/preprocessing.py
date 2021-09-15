@@ -283,9 +283,9 @@ def preprocess(
     '''
 
     # Special tokens
-    UNK = self.UNK_TOKEN_IDX
-    SOS = self.SOS_TOKEN_IDX
-    EOS = self.EOS_TOKEN_IDX
+    UNK = Language.UNK_TOKEN_IDX
+    SOS = Language.SOS_TOKEN_IDX
+    EOS = Language.EOS_TOKEN_IDX
 
     src_sentence = []
     tgt_sentence = []
