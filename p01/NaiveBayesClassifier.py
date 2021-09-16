@@ -4,14 +4,37 @@ import math
 from collections import defaultdict
 from tqdm import tqdm
 
+import data
+
 
 class NaiveBayesClassifier():
 
     '''
-    self.k: Smoothing을 위한 상수.
-    self.w2i: 사전에 구한 vocab.
-    self.priors: 각 class의 prior 확률.
-    self.likelihoods: 각 token의 특정 class 조건 내에서의 likelihood.
+    Task : 특정 문서가 들어왔을 때 이를 적절한 클래스로 분류하는 모델
+    * 클래스가 CV, NLP 두 개가 주어질 때 특정 문서가 들어오면 둘 중 적절한 클래스로 분류한다.
+    * 이곳에서는 0,1 이진 분류의 경우만 구현되어있어 클래스가 3개 이상인 경우 추가 구현해야한다.
+
+
+    Task 설명 : argmax of c 𝑃(c|d)를 구하는 것이 목표이고 이는 베이즈룰에 의해 다음과 같이 구해진다. 
+               (𝑃(c|d) : 문서가 특정 클래스로 분류될 확률)
+               = argmax of c 𝑃(𝑑|𝑐)*P(𝑐) = argmax of c 𝑃(𝑤1, 𝑤2, . . . , 𝑤n|𝑐)P(𝑐) → P(𝑐) ∏wi∈W 𝑃(wi|𝑐)
+               (wi : 문서에 포함된 i번 째 단어)
+
+    __init__
+        self.k: Smoothing을 위한 상수.
+        self.w2i: 사전에 구한 vocab.
+        self.priors: 각 class의 prior 확률(: P(c)) -> classi : P(classi) 딕셔너리
+        self.likelihoods: 각 token의 특정 class 조건 내에서의 likelihood. (: 𝑃(wi|𝑐)) 
+                        -> tokeni : {class1: 𝑃(tokeni|𝑐lassi), ... , classN: 𝑃(tokenN|𝑐lassN)} 딕셔너리
+
+    train
+        1. set_priors : 사전확률(: P(c)) 구하기 = c 문서의 갯수 / 전체문서의 갯수
+        2. set_likelihoods : 전체 문서에 등장하는 각 단어에 대한 likelihood(: 𝑃(wj|𝑐)) 구하기 
+                            = c클래스에 등장하는 wj 갯수 / c클래스에 등장하는 전체 단어 갯수 
+
+    inference
+        tokens(token1, ... tokenN)가 주어질 때 argmax of c P(𝑐) ∏wi∈W 𝑃(wi|𝑐) 구하여 c값 반환
+            
     '''
 
     def __init__(self, w2i, k=0.1):
@@ -74,30 +97,14 @@ class NaiveBayesClassifier():
 
 if __name__ =='__main__':
 
-    train_data = [
-    "정말 맛있습니다. 추천합니다.",
-    "기대했던 것보단 별로였네요.",
-    "다 좋은데 가격이 너무 비싸서 다시 가고 싶다는 생각이 안 드네요.",
-    "완전 최고입니다! 재방문 의사 있습니다.",
-    "음식도 서비스도 다 만족스러웠습니다.",
-    "위생 상태가 좀 별로였습니다. 좀 더 개선되기를 바랍니다.",
-    "맛도 좋았고 직원분들 서비스도 너무 친절했습니다.",
-    "기념일에 방문했는데 음식도 분위기도 서비스도 다 좋았습니다.",
-    "전반적으로 음식이 너무 짰습니다. 저는 별로였네요.",
-    "위생에 조금 더 신경 썼으면 좋겠습니다. 조금 불쾌했습니다."
-    ]
-    train_labels = [1, 0, 0, 1, 1, 0, 1, 1, 0, 0]
-
-    test_data = [
-    "정말 좋았습니다. 또 가고 싶네요.",
-    "별로였습니다. 되도록 가지 마세요.",
-    "다른 분들께도 추천드릴 수 있을 만큼 만족했습니다.",
-    "서비스가 좀 더 개선되었으면 좋겠습니다. 기분이 좀 나빴습니다."
-    ]
+    train_data = data.train_data
+    train_labels = data.train_labels
+    test_data = data.test_data
 
     # tokenize
     train_tokenized = make_tokenized(train_data)
     test_tokenized = make_tokenized(test_data)
+
 
     # print(train_tokenized)
     # print(test_tokenized)
