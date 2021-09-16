@@ -104,13 +104,13 @@ def make_tokenized(args):
     return tokenized
 
 
-def count_word(tokenized: List[str]) -> int:
-    """
+def count_word(tokenized):
+    '''
     Count unique words in tokenized data
 
     Args:
         tokenized (list): "tokenized" data produced after make_tokenized(raw_data)
-    """
+    '''
     word_count = defaultdict(int)  # Key: word, Value: count
 
     for tokens in tokenized:
@@ -152,7 +152,6 @@ class Dictionary(object):
         return len(self.idx2word)  # 사전에 저장된 단어 개수 리턴
 
 
-#### Corpus class
 class Corpus(object):
     '''
     Corpus class for constructing Language model
@@ -269,11 +268,11 @@ def preprocess(
     6. The length of preprocessed sentences should not exceed max_len.
     7. If the lenght of the sentence exceed max_len, you must truncate the sentence.
 
-    Arguments:
+    Args:
     raw_src_sentence -- raw source sentence without any modification
     raw_tgt_sentence -- raw target sentence without any modification 
-    src_word2idx -- dictionary for source language which maps words to their unique numbers
-    tgt_word2idx -- dictionary for target language which maps words to their unique numbers
+    src_word2idx -- dictionary for source language which maps words to their unique indicies
+    tgt_word2idx -- dictionary for target language which maps words to their unique indicies
     max_len -- maximum length of sentences
 
     Return:
@@ -283,26 +282,26 @@ def preprocess(
     '''
 
     # Special tokens
-    UNK = self.UNK_TOKEN_IDX
-    SOS = self.SOS_TOKEN_IDX
-    EOS = self.EOS_TOKEN_IDX
+    UNK = Language.UNK_TOKEN_IDX
+    SOS = Language.SOS_TOKEN_IDX
+    EOS = Language.EOS_TOKEN_IDX
 
     src_sentence = []
     tgt_sentence = []
     for word in raw_src_sentence:
-        if word in src_word2idx: # src dictionary에 현재의 word가 있는 경우
+        if word in src_word2idx:  # src dictionary에 현재의 word가 있는 경우
             src_sentence.append(src_word2idx[word])
         else:
-            src_sentence.append(UNK) # src dictionary에 현재의 word가 없는 경우 -> <unk> token
+            src_sentence.append(UNK)  # src dictionary에 현재의 word가 없는 경우 -> <unk> token
     
     for word in raw_tgt_sentence:
-        if word in tgt_word2idx: # tgt dictionary에 현재의 word가 있는 경우
+        if word in tgt_word2idx:  # tgt dictionary에 현재의 word가 있는 경우
             tgt_sentence.append(tgt_word2idx[word])
         else:
-            tgt_sentence.append(UNK) # tgt dictionary에 현재의 word가 없는 경우 -> <unk> token
+            tgt_sentence.append(UNK)  # tgt dictionary에 현재의 word가 없는 경우 -> <unk> token
 
-    src_sentence = src_sentence[:max_len] # max_len까지의 sequence만
-    tgt_sentence = [SOS] + tgt_sentence[:max_len-2] + [EOS] # SOS, EOS token을 추가하고 max_len까지의 sequence만
+    src_sentence = src_sentence[:max_len]  # max_len까지의 sequence만
+    tgt_sentence = [SOS] + tgt_sentence[:max_len-2] + [EOS]  # SOS, EOS token을 추가하고 max_len까지의 sequence만
 
     return src_sentence, tgt_sentence
 
