@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class RNNModel(nn.Module):
     """
     Container module with an encoder, a recurrent module, and a decoder.
@@ -18,14 +19,17 @@ class RNNModel(nn.Module):
         self.drop = nn.Dropout(dropout)
         self.encoder = nn.Embedding(ntoken, ninp)
         if rnn_type in ['LSTM', 'GRU']:
-            self.rnn = getattr(nn, rnn_type)(ninp, nhid, nlayers, dropout=dropout)
+            self.rnn = getattr(nn, rnn_type)(
+                ninp, nhid, nlayers, dropout=dropout)
         else:
             try:
-                nonlinearity = {'RNN_TANH': 'tanh', 'RNN_RELU': 'relu'}[rnn_type]
+                nonlinearity = {'RNN_TANH': 'tanh',
+                                'RNN_RELU': 'relu'}[rnn_type]
             except KeyError:
-                raise ValueError( """An invalid option for `--model` was supplied,
+                raise ValueError("""An invalid option for `--model` was supplied,
                                  options are ['LSTM', 'GRU', 'RNN_TANH' or 'RNN_RELU']""")
-            self.rnn = nn.RNN(ninp, nhid, nlayers, nonlinearity=nonlinearity, dropout=dropout)
+            self.rnn = nn.RNN(ninp, nhid, nlayers,
+                              nonlinearity=nonlinearity, dropout=dropout)
         self.decoder = nn.Linear(nhid, ntoken)
 
         self.init_weights()
@@ -41,12 +45,12 @@ class RNNModel(nn.Module):
         nn.init.uniform_(self.decoder.weight, -initrange, initrange)
 
     def forward(self, input, hidden):
-        #dropout은 encode 후, decode 전 임의로 넣어도 무방.
-        encoded=self.encoder(input)
-        #encoded=self.drop(encoded)
-        outs,_=self.rnn(encoded,hidden)
-        #outs=self.drop(outs)
-        decoded=self.decoder(outs).view(-1,self.ntoken)
+        # dropout은 encode 후, decode 전 임의로 넣어도 무방.
+        encoded = self.encoder(input)
+        # encoded=self.drop(encoded)
+        outs, _ = self.rnn(encoded, hidden)
+        # outs=self.drop(outs)
+        decoded = self.decoder(outs).view(-1, self.ntoken)
         return F.log_softmax(decoded, dim=1), hidden
 
     def init_hidden(self, bsz):
