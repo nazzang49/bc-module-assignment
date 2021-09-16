@@ -78,26 +78,26 @@ class DotAttention(nn.Module):
         query : decoder_hidden 와 관련
         key, value : encoder_outputs 와 관련
         
-    example:
-        key   = [[[1, 2, 3, 4],
-                  [2, 3, 4, 5]],
-                 [[3, 4, 5, 6],
-                  [4, 5, 6, 7]]] -> (B = 2, S_L = 2, d_h = 4) : 길이(토큰)이 2인 2개의 문장
-        query = [[1, 0, 1, 0],
-                 [0, 1, 0, 1]] -> (B = 2, d_h = 4)
-        query.unsqueeze(1) = [[[1, 0, 1, 0]],
-                              [[0, 1, 0, 1]]] -> (B = 2, S_L = 1, d_h = 4)
-        
-        mul(key, query.unsqueeze(1)) : broadcast와 Element-wise operations 로 인해 
-          = [[[1, 0, 3, 0],
-              [2, 0, 4, 0]],
-             [[0, 4, 0, 6],
-              [0, 5, 0, 7]]])
+        example:
+            key   = [[[1, 2, 3, 4],
+                     [2, 3, 4, 5]],
+                     [[3, 4, 5, 6],
+                     [4, 5, 6, 7]]] -> (B = 2, S_L = 2, d_h = 4) : 길이(토큰)이 2인 2개의 문장
+            query = [[1, 0, 1, 0],
+                     [0, 1, 0, 1]] -> (B = 2, d_h = 4)
+            query.unsqueeze(1) = [[[1, 0, 1, 0]],
+                                  [[0, 1, 0, 1]]] -> (B = 2, S_L = 1, d_h = 4)
+            
+            mul(key, query.unsqueeze(1)) : broadcast와 Element-wise operations 로 인해 
+            = [[[1, 0, 3, 0],
+                [2, 0, 4, 0]],
+                [[0, 4, 0, 6],
+                [0, 5, 0, 7]]])
 
-        sum(mul(key, query.unsqueeze(1)), dim = -1)
-          = [[ 4,  6],
-             [10, 12]]
-    """
+            sum(mul(key, query.unsqueeze(1)), dim = -1)
+            = [[ 4,  6],
+                [10, 12]]
+        """
         attn_scores = F.softmax(energy, dim=-1)  # (B, S_L)
         attn_values = torch.sum(torch.mul(encoder_outputs.transpose(
             0, 1), attn_scores.unsqueeze(2)), dim=1)  # (B, d_h)
