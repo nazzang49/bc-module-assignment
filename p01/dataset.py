@@ -9,6 +9,7 @@ from collections import defaultdict
 import argparse
 import torch
 
+
 class SkipGramDataset(Dataset):
     '''
     A dataset class for preparing skip-gram dataset to do Word2Vec
@@ -17,6 +18,7 @@ class SkipGramDataset(Dataset):
         train_tokenized (list): 2D-Array of tokenized words from train raw sentences
         window_size (int): focus on 2-positions(default) both left and right side of current word
     '''
+
     def __init__(self, train_tokenized, window_size=2):
         # 초기화 시 X, Y 세팅
         self.x = []
@@ -28,7 +30,8 @@ class SkipGramDataset(Dataset):
                 # token_ids 범위 내
                 if i - window_size >= 0 and i + window_size < len(token_ids):
                     # target => 현위치 기준 (왼쪽 2개 단어 + 오른쪽 2개 단어)
-                    self.y += (token_ids[i - window_size:i] + token_ids[i + 1:i + window_size + 1])
+                    self.y += (token_ids[i - window_size:i] +
+                               token_ids[i + 1:i + window_size + 1])
                     self.x += [id] * 2 * window_size
 
         self.x = torch.LongTensor(self.x)
@@ -43,6 +46,7 @@ class SkipGramDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.x[idx], self.y[idx]
+
 
 class CBOWDataset(Dataset):
     """
@@ -106,6 +110,7 @@ class CBOWDataset(Dataset):
                 w2i[pair[0]] = len(w2i)
         return w2i
 
+
 class CBOWLoader(DataLoader):
     """
     just same as the DataLoader, but for convenience, inherited DataLoader
@@ -138,6 +143,7 @@ class NMTDataset(Sequence[Tuple[List[int], List[int]]]):
     def __getitem__(self, index: int) -> Tuple[List[str], List[str]]:
         """
             NMTDataset에 index로 접근( NMTDataset[index] )할 경우 해당 문장을 지정한 maxlen까지의 길이를 가진 word2idx로 변화한 sentance 값을 return
+
             Arg:
                 index : [int] 몇 번째 문장을 불러올지 지정
             return :
@@ -148,14 +154,18 @@ class NMTDataset(Sequence[Tuple[List[int], List[int]]]):
     def __len__(self) -> int:
         return len(self._src)
 
+
 class NMTDataLoder(DataLoader):
     def __init__(self,  *args, **kwargs):
         super(NMTDataLoder, self).__init__(*args, **kwargs)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--w2v_type', type=str, default='skip', help='A type of Word2Vec (default: skip-gram)')
-    parser.add_argument('--window_size', type=int, default=2, help='A sliding window size (default: 2)')
+    parser.add_argument('--w2v_type', type=str, default='skip',
+                        help='A type of Word2Vec (default: skip-gram)')
+    parser.add_argument('--window_size', type=int, default=2,
+                        help='A sliding window size (default: 2)')
 
     args = parser.parse_args()
     print(' -- Check Args -- ')
